@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Parameters - Amkyaw.Dev AI</title>
+    <link rel="stylesheet" href="../css/fanda.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0a0a0f; color: #fff; }
+        .page-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: #050508; border-right: 1px solid rgba(255,255,255,0.1); padding: 20px; position: fixed; top: 0; left: 0; bottom: 0; }
+        .sidebar h3 { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu a { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #a0a0a0; border-radius: 10px; transition: all 0.2s; text-decoration: none; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: rgba(255,255,255,0.05); color: #00d4ff; }
+        .sidebar-menu svg { width: 20px; height: 20px; }
+        .main { flex: 1; margin-left: 250px; padding: 24px; }
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .page-header p { color: #a0a0a0; margin: 0; }
+        .api-docs { max-width: 900px; }
+        .api-endpoint { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .endpoint-url { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .method { padding: 6px 12px; background: #00ff88; color: #0a0a0f; font-size: 0.75rem; font-weight: 600; border-radius: 4px; }
+        .method.post { background: #ffd93d; }
+        .endpoint-url code { flex: 1; font-family: 'Fira Code', monospace; color: #00d4ff; }
+        .params-table { width: 100%; border-collapse: collapse; }
+        .params-table th { text-align: left; padding: 12px; background: rgba(255,255,255,0.05); color: #a0a0a0; font-size: 0.75rem; text-transform: uppercase; }
+        .params-table td { padding: 12px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .param-name { font-family: 'Fira Code', monospace; color: #00d4ff; }
+        .param-type { font-size: 0.75rem; color: #00ff88; }
+        .param-required { font-size: 0.75rem; color: #ff6b6b; }
+        .param-optional { font-size: 0.75rem; color: #a0a0a0; }
+        .examples { margin-top: 20px; }
+        .example-title { font-size: 0.875rem; color: #a0a0a0; margin-bottom: 12px; }
+        .example-code { background: #0d0d12; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; font-family: 'Fira Code', monospace; font-size: 0.875rem; overflow-x: auto; }
+        .example-code .comment { color: #666; }
+        .example-code .string { color: #00ff88; }
+        .example-code .param { color: #00d4ff; }
+        .try-it { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .try-title { font-size: 0.875rem; color: #a0a0a0; margin-bottom: 12px; }
+        .try-form { display: flex; gap: 12px; }
+        .try-input { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 0.875rem; }
+        .try-btn { padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #00ff88); border: none; border-radius: 8px; color: #0a0a0f; font-weight: 600; cursor: pointer; }
+        .try-result { margin-top: 16px; background: #0d0d12; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 16px; display: none; }
+        .try-result.show { display: block; }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main { margin-left: 0; } .try-form { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <aside class="sidebar">
+            <h3>AI Tools</h3>
+            <ul class="sidebar-menu">
+                <li><a href="chat.html"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>Chat</a></li>
+                <li><a href="coder.html"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>Code</a></li>
+                <li><a href="translate.html"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>Translate</a></li>
+                <li><a href="summarize.html"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>Summarize</a></li>
+                <li><a href="roleplay.html"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /></svg>Roleplay</a></li>
+                <li><a href="parameter.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /></svg>API</a></li>
+            </ul>
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>API Parameters</h1>
+                <p>Learn how to use the Amkyaw.Dev AI API</p>
+            </div>
+            
+            <div class="api-docs">
+                <div class="api-endpoint">
+                    <div class="endpoint-url">
+                        <span class="method">GET</span>
+                        <code>https://ai.amkyaw.workers.dev/?mode=chat&msg=Hello</code>
+                    </div>
+                    
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param-name">mode</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-required">Yes</span></td>
+                                <td>AI mode: chat, code, translate, summarize, roleplay</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">msg</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-required">Yes</span></td>
+                                <td>Your message or prompt (URL encoded)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">lang</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-optional">No</span></td>
+                                <td>Target language for translation (e.g., Japanese, Burmese)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">persona</span></td>
+                                <td><span class="param-type">string</span></td>
+                                <td><span class="param-optional">No</span></td>
+                                <td>Character for roleplay mode</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="examples">
+                        <div class="example-title">Example Requests:</div>
+                        <pre class="example-code"><span class="comment"># Chat Mode</span>
+https://ai.amkyaw.workers.dev/?mode=<span class="param">chat</span>&msg=<span class="string">Hello%20AI</span>
+
+<span class="comment"># Code Generation</span>
+https://ai.amkyaw.workers.dev/?mode=<span class="param">code</span>&msg=<span class="string">Python%20login%20form</span>
+
+<span class="comment"># Translation (EN to Japanese)</span>
+https://ai.amkyaw.workers.dev/?mode=<span class="param">translate</span>&lang=<span class="string">Japanese</span>&msg=<span class="string">Hello</span>
+
+<span class="comment"># Summarize</span>
+https://ai.amkyaw.workers.dev/?mode=<span class="param">summarize</span>&msg=<span class="string">Long%20text%20here</span>
+
+<span class="comment"># Roleplay</span>
+https://ai.amkyaw.workers.dev/?mode=<span class="param">roleplay</span>&persona=<span class="string">teacher</span>&msg=<span class="string">Hello</span></pre>
+                    </div>
+                    
+                    <div class="try-it">
+                        <div class="try-title">Try It:</div>
+                        <div class="try-form">
+                            <input type="text" class="try-input" id="try-msg" placeholder="Enter your message...">
+                            <select class="try-input" id="try-mode">
+                                <option value="chat">Chat</option>
+                                <option value="code">Code</option>
+                                <option value="translate">Translate</option>
+                                <option value="summarize">Summarize</option>
+                                <option value="roleplay">Roleplay</option>
+                            </select>
+                            <button class="try-btn" onclick="tryAPI()">Send</button>
+                        </div>
+                        <div class="try-result" id="try-result"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+        async function tryAPI() {
+            const msg = document.getElementById('try-msg').value.trim();
+            const mode = document.getElementById('try-mode').value;
+            const resultEl = document.getElementById('try-result');
+            
+            if (!msg) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            resultEl.classList.add('show');
+            resultEl.textContent = 'Loading...';
+            
+            try {
+                const result = await askAI(msg, mode);
+                
+                if (result.success) {
+                    resultEl.textContent = result.response;
+                } else {
+                    resultEl.textContent = 'Error: ' + result.error;
+                }
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
