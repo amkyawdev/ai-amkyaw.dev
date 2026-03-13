@@ -5,7 +5,7 @@
 
 // API Configuration
 const API_CONFIG = {
-    baseUrl: 'https://ai.amkyaw.workers.dev',
+    baseUrl: 'https://ai.amkyaw.workers.dev/',
     endpoints: {
         chat: '/',
         code: '/',
@@ -22,21 +22,23 @@ function buildApiUrl(mode, message, options = {}) {
     const endpoint = API_CONFIG.endpoints[mode] || API_CONFIG.endpoints.chat;
     const url = new URL(API_CONFIG.baseUrl + endpoint);
     
-    // Add mode
+    // Mode
     url.searchParams.set('mode', mode);
     
-    // Add message
-    url.searchParams.set('msg', encodeURIComponent(message));
+    // Message
+    url.searchParams.set('msg', message);
     
-    // Add additional options
+    // Translate language
     if (options.lang) {
-        url.searchParams.set('lang', options.lang);
+        url.searchParams.set('to', options.lang);
     }
     
+    // Roleplay persona
     if (options.persona) {
         url.searchParams.set('persona', options.persona);
     }
     
+    // Context
     if (options.context) {
         url.searchParams.set('context', options.context);
     }
@@ -58,8 +60,7 @@ async function apiRequest(url, options = {}) {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'text/plain, application/json',
-                    'Content-Type': 'application/json'
+                    'Accept': 'text/plain, application/json'
                 },
                 signal: controller.signal
             });
@@ -71,7 +72,11 @@ async function apiRequest(url, options = {}) {
             }
             
             const data = await response.text();
-            return { success: true, data };
+            
+            return {
+                success: true,
+                data
+            };
             
         } catch (error) {
             lastError = error;
@@ -82,44 +87,48 @@ async function apiRequest(url, options = {}) {
                 console.error(`Request failed (attempt ${attempt + 1}/${retries + 1}):`, error.message);
             }
             
-            // Wait before retrying
             if (attempt < retries) {
                 await sleep(1000 * (attempt + 1));
             }
         }
     }
     
-    return { 
-        success: false, 
-        error: lastError.message || 'Request failed' 
+    return {
+        success: false,
+        error: lastError.message || 'Request failed'
     };
 }
 
 // Ask AI - main function
 async function askAI(message, mode = 'chat', options = {}) {
+
     // Build prompt using engine
     const prompt = buildPrompt(mode, message, options);
-    
+
     // Build API URL
-    const url = buildApiUrl(mode, message, options);
-    
-    // Make request
+    const url = buildApiUrl(mode, prompt, options);
+
+    // Request API
     const result = await apiRequest(url);
-    
+
     if (result.success) {
-        // Process response using engine
+
+        // Process AI response
         const processedResponse = processResponse(result.data, mode);
-        
-        return { 
-            success: true, 
+
+        return {
+            success: true,
             response: processedResponse,
             rawResponse: result.data
         };
+
     } else {
-        return { 
-            success: false, 
-            error: result.error 
+
+        return {
+            success: false,
+            error: result.error
         };
+
     }
 }
 
@@ -134,7 +143,7 @@ async function generateCode(message) {
 }
 
 // Translate
-async function translate(message, targetLang = 'en') {
+async function translate(message, targetLang = 'English') {
     return askAI(message, 'translate', { lang: targetLang });
 }
 
@@ -156,13 +165,24 @@ function sleep(ms) {
 // Get API status
 async function getApiStatus() {
     try {
-        const response = await fetch(API_CONFIG.baseUrl, { 
+
+        const response = await fetch(API_CONFIG.baseUrl, {
             method: 'HEAD',
-            signal: AbortSignal.timeout(5000) 
+            signal: AbortSignal.timeout(5000)
         });
-        return { online: response.ok, status: response.status };
+
+        return {
+            online: response.ok,
+            status: response.status
+        };
+
     } catch {
-        return { online: false, status: 0 };
+
+        return {
+            online: false,
+            status: 0
+        };
+
     }
 }
 
@@ -171,9 +191,11 @@ window.API_CONFIG = API_CONFIG;
 window.buildApiUrl = buildApiUrl;
 window.apiRequest = apiRequest;
 window.askAI = askAI;
+
 window.chat = chat;
 window.generateCode = generateCode;
 window.translate = translate;
 window.summarize = summarize;
 window.roleplay = roleplay;
+
 window.getApiStatus = getApiStatus;
