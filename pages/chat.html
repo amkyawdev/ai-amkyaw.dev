@@ -18,16 +18,23 @@
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    #overlay { transition: opacity 0.3s ease, visibility 0.3s ease; }
+    #overlay.hidden { opacity: 0; visibility: hidden; }
+    #model-dialog > div { animation: dialogIn 0.2s ease; }
+    @keyframes dialogIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
-<body class="h-screen flex">
+<body class="h-screen flex overflow-hidden">
   <!-- Mobile Menu Button -->
-  <button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white/10 hover:bg-white/20">
+  <button id="menu-btn" aria-label="Toggle menu" class="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
 
+  <!-- Overlay -->
+  <div id="overlay" class="lg:hidden fixed inset-0 bg-black/50 z-30 hidden"></div>
+
   <!-- Sidebar -->
-  <aside id="sidebar" class="w-64 bg-[#020408] border-r border-white/10 flex flex-col fixed lg:relative h-full -translate-x-full lg:translate-x-0 transition-transform z-40">
+  <aside id="sidebar" class="w-64 bg-[#020408] border-r border-white/10 flex flex-col fixed lg:relative h-full -translate-x-full lg:translate-x-0 transition-transform duration-300 z-40">
     <div class="p-4 border-b border-white/10">
       <a href="../index.html" class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-green-400 flex items-center justify-center">
@@ -67,36 +74,34 @@
     
     <div class="p-4 border-t border-white/10">
       <div class="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-green-400 flex items-center justify-center text-black font-bold text-sm">U</div>
+        <div id="user-avatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-green-400 flex items-center justify-center text-black font-bold text-sm">U</div>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-medium truncate">User</div>
-          <div class="text-xs text-white/40 truncate">user@example.com</div>
+          <div id="user-name" class="text-sm font-medium truncate">User</div>
+          <div id="user-email" class="text-xs text-white/40 truncate">user@example.com</div>
         </div>
-        <button onclick="signOut()" class="p-2 hover:bg-white/10 rounded-lg">
+        <button id="signout-btn" aria-label="Sign out" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
           <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
       </div>
     </div>
   </aside>
 
-  <div onclick="toggleSidebar()" class="lg:hidden fixed inset-0 bg-black/50 z-30 hidden" id="overlay"></div>
-
   <!-- Main -->
-  <main class="flex-1 flex flex-col h-full">
-    <header class="h-14 px-4 flex items-center justify-between border-b border-white/10 glass-dark">
+  <main class="flex-1 flex flex-col h-full overflow-hidden">
+    <header class="h-14 px-4 flex items-center justify-between border-b border-white/10 glass-dark flex-shrink-0">
       <div class="flex items-center gap-3">
         <h1 class="text-lg font-semibold">AI Chat</h1>
-        <button onclick="toggleModelDialog()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+        <button id="model-selector-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
           <div id="current-model-icon" class="w-5 h-5 rounded bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-xs font-bold text-black">C</div>
-          <span id="current-model-name" class="text-sm">ChatGPT-4o</span>
+          <span id="current-model-name" class="text-sm hidden sm:inline">ChatGPT-4o</span>
           <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="toggleSettings()" class="p-2 hover:bg-white/10 rounded-lg" title="Settings">
+        <button id="settings-btn" aria-label="Settings" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
-        <button onclick="clearChat()" class="p-2 hover:bg-white/10 rounded-lg" title="Clear">
+        <button id="clear-btn" aria-label="Clear chat" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
@@ -110,19 +115,19 @@
         <h2 class="text-xl font-bold text-gradient mb-2">Welcome to AI Chat</h2>
         <p class="text-white/40 max-w-md mx-auto mb-4">Select a model and start chatting with advanced AI.</p>
         <div class="flex flex-wrap justify-center gap-2">
-          <button onclick="selectModel('gpt-4o')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-cyan-400/50 text-sm transition-all">ChatGPT</button>
-          <button onclick="selectModel('gemini')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-purple-400/50 text-sm transition-all">Gemini</button>
-          <button onclick="selectModel('deepseek')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-orange-400/50 text-sm transition-all">DeepSeek</button>
-          <button onclick="selectModel('claude')" class="px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-amber-400/50 text-sm transition-all">Claude</button>
+          <button class="model-quick-btn px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-cyan-400/50 text-sm transition-all" data-model="gpt-4o">ChatGPT</button>
+          <button class="model-quick-btn px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-purple-400/50 text-sm transition-all" data-model="gemini">Gemini</button>
+          <button class="model-quick-btn px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-orange-400/50 text-sm transition-all" data-model="deepseek">DeepSeek</button>
+          <button class="model-quick-btn px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-amber-400/50 text-sm transition-all" data-model="claude">Claude</button>
         </div>
       </div>
       <div id="messages"></div>
     </div>
 
-    <footer class="p-4 border-t border-white/10 glass-dark">
+    <footer class="p-4 border-t border-white/10 glass-dark flex-shrink-0">
       <div class="flex gap-3 max-w-4xl mx-auto">
-        <textarea id="input" rows="1" class="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/30 resize-none focus:border-cyan-400 outline-none transition-all" placeholder="Type your message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
-        <button onclick="sendMessage()" class="btn-gradient w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+        <textarea id="chat-input" rows="1" class="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/30 resize-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 outline-none transition-all" placeholder="Type your message..."></textarea>
+        <button id="send-btn" aria-label="Send message" class="btn-gradient w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 hover:scale-105 transition-transform">
           <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
         </button>
       </div>
@@ -131,171 +136,321 @@
 
   <!-- Model Dialog -->
   <div id="model-dialog" class="fixed inset-0 z-50 hidden">
-    <div onclick="toggleModelDialog()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg dialog-enter">
+    <div id="model-dialog-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
       <div class="glass rounded-2xl p-6 m-4">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold">Select AI Model</h3>
-          <button onclick="toggleModelDialog()" class="p-2 hover:bg-white/10 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+          <button id="close-model-dialog" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
-        <div class="space-y-2 max-h-80 overflow-y-auto">
-          <div onclick="selectModel('gpt-4o')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-cyan-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-black font-bold">C</div>
-            <div><div class="font-medium">ChatGPT-4o</div><div class="text-xs text-white/40">OpenAI - Fast & Creative</div></div>
-          </div>
-          <div onclick="selectModel('gemini')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-purple-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center font-bold">G</div>
-            <div><div class="font-medium">Gemini 1.5 Pro</div><div class="text-xs text-white/40">Google - Long Context</div></div>
-          </div>
-          <div onclick="selectModel('deepseek')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-orange-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center font-bold">D</div>
-            <div><div class="font-medium">DeepSeek V3</div><div class="text-xs text-white/40">DeepSeek - Smart Coding</div></div>
-          </div>
-          <div onclick="selectModel('claude')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-amber-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-black font-bold">A</div>
-            <div><div class="font-medium">Claude 3.5</div><div class="text-xs text-white/40">Anthropic - Safe & Helpful</div></div>
-          </div>
-          <div onclick="selectModel('llama')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-blue-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center font-bold">L</div>
-            <div><div class="font-medium">Llama 3.1</div><div class="text-xs text-white/40">Meta - Open Source</div></div>
-          </div>
-          <div onclick="selectModel('mixtral')" class="flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-cyan-400/30 transition-all">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center font-bold">M</div>
-            <div><div class="font-medium">Mixtral 8x7B</div><div class="text-xs text-white/40">Mistral - Efficient</div></div>
-          </div>
-        </div>
+        <div id="model-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
       </div>
     </div>
   </div>
 
   <!-- Settings Panel -->
-  <div id="settings-panel" class="fixed top-0 right-0 h-full w-80 bg-[#020408] border-l border-white/10 transform translate-x-full transition-transform z-50">
+  <div id="settings-panel" class="fixed top-0 right-0 h-full w-80 bg-[#020408] border-l border-white/10 transform translate-x-full transition-transform duration-300 z-50">
     <div class="p-4 border-b border-white/10 flex items-center justify-between">
       <h3 class="font-semibold">Settings</h3>
-      <button onclick="toggleSettings()" class="p-2 hover:bg-white/10 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      <button id="close-settings" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
     </div>
-    <div class="p-4 space-y-4">
-      <div><label class="text-sm text-white/60 mb-2 block">Temperature</label><input type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-400"><div class="flex justify-between text-xs text-white/30 mt-1"><span>Precise</span><span>Creative</span></div></div>
-      <div><label class="text-sm text-white/60 mb-2 block">Max Response</label><select class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm"><option>Short (500)</option><option selected>Medium (2000)</option><option>Long (4000)</option></select></div>
-      <div class="flex items-center justify-between"><span class="text-sm">Streaming</span><button class="w-12 h-6 rounded-full bg-cyan-400 relative"><span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-black"></span></button></div>
-      <div class="flex items-center justify-between"><span class="text-sm">Save History</span><button class="w-12 h-6 rounded-full bg-cyan-400 relative"><span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-black"></span></button></div>
+    <div class="p-4 space-y-4 overflow-y-auto h-full">
+      <div>
+        <label class="text-sm text-white/60 mb-2 block">Temperature</label>
+        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-400">
+        <div class="flex justify-between text-xs text-white/30 mt-1"><span>Precise</span><span>Creative</span></div>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-2 block">Max Response</label>
+        <select id="max-response" class="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm">
+          <option value="500">Short (500)</option>
+          <option value="2000" selected>Medium (2000)</option>
+          <option value="4000">Long (4000)</option>
+        </select>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm">Streaming Response</span>
+        <button id="streaming-toggle" class="w-12 h-6 rounded-full bg-cyan-400 relative transition-colors"><span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-black transition-transform"></span></button>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm">Save History</span>
+        <button id="history-toggle" class="w-12 h-6 rounded-full bg-cyan-400 relative transition-colors"><span class="absolute right-1 top-1 w-4 h-4 rounded-full bg-black transition-transform"></span></button>
+      </div>
     </div>
   </div>
 
-  <script type="module">
-    import { API_CONFIG } from '../config/api.config.js';
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // =====================
+    // CONFIGURATION
+    // =====================
+    const API_BASE_URL = 'https://ai.amkyaw.workers.dev';
     
-    const models = {
-      'gpt-4o': { name: 'ChatGPT-4o', icon: 'C', gradient: 'from-green-400 to-emerald-500', color: 'text-black' },
-      'gemini': { name: 'Gemini 1.5 Pro', icon: 'G', gradient: 'from-purple-400 to-pink-500', color: '' },
-      'deepseek': { name: 'DeepSeek V3', icon: 'D', gradient: 'from-orange-400 to-red-500', color: '' },
-      'claude': { name: 'Claude 3.5', icon: 'A', gradient: 'from-amber-400 to-yellow-500', color: 'text-black' },
-      'llama': { name: 'Llama 3.1', icon: 'L', gradient: 'from-blue-400 to-indigo-500', color: '' },
-      'mixtral': { name: 'Mixtral 8x7B', icon: 'M', gradient: 'from-cyan-400 to-blue-500', color: '' }
+    const AI_MODELS = {
+      'gpt-4o': { name: 'ChatGPT-4o', icon: 'C', gradient: 'from-green-400 to-emerald-500', color: 'text-black', desc: 'OpenAI - Fast & Creative' },
+      'gemini': { name: 'Gemini 1.5 Pro', icon: 'G', gradient: 'from-purple-400 to-pink-500', color: '', desc: 'Google - Long Context' },
+      'deepseek': { name: 'DeepSeek V3', icon: 'D', gradient: 'from-orange-400 to-red-500', color: '', desc: 'DeepSeek - Smart Coding' },
+      'claude': { name: 'Claude 3.5', icon: 'A', gradient: 'from-amber-400 to-yellow-500', color: 'text-black', desc: 'Anthropic - Safe & Helpful' },
+      'llama': { name: 'Llama 3.1', icon: 'L', gradient: 'from-blue-400 to-indigo-500', color: '', desc: 'Meta - Open Source' },
+      'mixtral': { name: 'Mixtral 8x7B', icon: 'M', gradient: 'from-cyan-400 to-blue-500', color: '', desc: 'Mistral - Efficient' }
     };
-    
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAr7Hv2ApKtNTxF11MhT5cuWeg_Dgsh0TY",
+      authDomain: "smart-burme-app.firebaseapp.com",
+      projectId: "smart-burme-app",
+      storageBucket: "smart-burme-app.appspot.com",
+      messagingSenderId: "851502425686",
+      appId: "1:851502425686:web:f29e0e1dfa84794b4abdf7"
+    };
+
+    // =====================
+    // STATE
+    // =====================
     let currentModel = new URLSearchParams(window.location.search).get('model') || 'gpt-4o';
     let messages = [];
+    let settings = { temperature: 0.7, maxResponse: 2000, streaming: true, saveHistory: true };
+
+    // =====================
+    // UTILITY FUNCTIONS
+    // =====================
     
-    // Init
-    document.getElementById('input').addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-    });
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showNotification(message) {
+      const existing = document.querySelector('.notification');
+      if (existing) existing.remove();
+      const noti = document.createElement('div');
+      noti.className = 'notification fixed top-4 right-4 px-4 py-3 glass rounded-lg text-sm z-50 animate-pulse';
+      noti.textContent = message;
+      document.body.appendChild(noti);
+      setTimeout(() => noti.remove(), 3000);
+    }
+
+    function scrollToBottom() {
+      const chatBody = document.getElementById('chat-body');
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // =====================
+    // UI FUNCTIONS
+    // =====================
     
-    // Toggle functions
-    window.toggleSidebar = () => {
+    function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('-translate-x-full');
       document.getElementById('overlay').classList.toggle('hidden');
-    };
-    
-    window.toggleModelDialog = () => document.getElementById('model-dialog').classList.toggle('hidden');
-    window.toggleSettings = () => document.getElementById('settings-panel').classList.toggle('translate-x-full');
-    
-    window.selectModel = (modelId) => {
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('overlay').classList.add('hidden');
+    }
+
+    function toggleModelDialog() {
+      document.getElementById('model-dialog').classList.toggle('hidden');
+    }
+
+    function closeModelDialog() {
+      document.getElementById('model-dialog').classList.add('hidden');
+    }
+
+    function toggleSettings() {
+      document.getElementById('settings-panel').classList.toggle('translate-x-full');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-panel').classList.add('translate-x-full');
+    }
+
+    function selectModel(modelId) {
       currentModel = modelId;
-      const model = models[modelId];
+      const model = AI_MODELS[modelId];
       const icon = document.getElementById('current-model-icon');
       icon.className = `w-5 h-5 rounded bg-gradient-to-br ${model.gradient} flex items-center justify-center text-xs font-bold ${model.color}`;
       icon.textContent = model.icon;
       document.getElementById('current-model-name').textContent = model.name;
-      toggleModelDialog();
-    };
+      closeModelDialog();
+      showNotification(`Switched to ${model.name}`);
+    }
+
+    function renderModelList() {
+      const list = document.getElementById('model-list');
+      list.innerHTML = Object.entries(AI_MODELS).map(([id, model]) => `
+        <div class="model-option flex items-center gap-3 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/5 hover:border-cyan-400/30 transition-all ${id === currentModel ? 'bg-cyan-400/10 border-cyan-400' : ''}" data-model="${id}">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${model.gradient} flex items-center justify-center text-black font-bold ${model.color}">${model.icon}</div>
+          <div class="flex-1"><div class="font-medium">${model.name}</div><div class="text-xs text-white/40">${model.desc}</div></div>
+          ${id === currentModel ? '<svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : ''}
+        </div>
+      `).join('');
+      
+      list.querySelectorAll('.model-option').forEach(el => {
+        el.addEventListener('click', () => selectModel(el.dataset.model));
+      });
+    }
+
+    // =====================
+    // CHAT FUNCTIONS
+    // =====================
     
-    // Send message
-    window.sendMessage = async () => {
-      const input = document.getElementById('input');
-      const msg = input.value.trim();
-      if (!msg) return;
+    function addMessage(content, sender) {
+      const container = document.getElementById('messages');
+      const div = document.createElement('div');
+      const model = AI_MODELS[currentModel];
+      const icon = sender === 'ai' ? model.icon : '👤';
+      const gradient = sender === 'ai' ? model.gradient : '';
+      
+      if (sender === 'user') {
+        div.className = 'flex justify-end';
+        div.innerHTML = `<div class="message-user px-4 py-3 rounded-2xl max-w-[80%] whitespace-pre-wrap">${escapeHtml(content)}</div>`;
+      } else {
+        div.className = 'flex items-start gap-3';
+        div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 text-xs font-bold ${model.color}">${icon}</div><div class="glass px-4 py-3 rounded-2xl max-w-[80%] whitespace-pre-wrap">${escapeHtml(content)}</div>`;
+      }
+      
+      container.appendChild(div);
+      
+      if (settings.saveHistory) {
+        messages.push({ content, sender, timestamp: Date.now() });
+        try { localStorage.setItem('chat_history', JSON.stringify(messages)); } catch (e) {}
+      }
+      scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+      const container = document.getElementById('messages');
+      const model = AI_MODELS[currentModel];
+      const div = document.createElement('div');
+      div.id = 'typing-indicator';
+      div.className = 'flex items-start gap-3';
+      div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br ${model.gradient} flex items-center justify-center text-xs font-bold ${model.color}">${model.icon}</div><div class="glass px-4 py-3 rounded-2xl"><div class="flex gap-1"><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span></div></div>`;
+      container.appendChild(div);
+      scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      if (!message) return;
       
       input.value = '';
       input.style.height = 'auto';
       document.getElementById('welcome').style.display = 'none';
       
-      addMessage(msg, 'user');
-      showTyping();
+      addMessage(message, 'user');
+      showTypingIndicator();
       
       try {
-        const url = `${API_CONFIG.baseUrl}/?mode=chat&msg=${encodeURIComponent(msg)}&model=${currentModel}`;
-        const res = await fetch(url);
-        const text = await res.text();
-        removeTyping();
-        addMessage(text, 'ai');
-      } catch (e) {
-        removeTyping();
-        addMessage('Error: ' + e.message, 'ai');
+        const params = new URLSearchParams({ mode: 'chat', msg: message, model: currentModel, temp: settings.temperature, max: settings.maxResponse });
+        const url = `${API_BASE_URL}/?${params.toString()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const text = await response.text();
+        removeTypingIndicator();
+        addMessage(text || 'No response from AI.', 'ai');
+      } catch (error) {
+        removeTypingIndicator();
+        console.error('API Error:', error);
+        addMessage(`Error: ${error.message || 'Failed to connect to AI service.'}`, 'ai');
       }
-    };
-    
-    function addMessage(content, sender) {
-      const container = document.getElementById('messages');
-      const div = document.createElement('div');
-      div.className = sender === 'user' ? 'flex justify-end' : 'flex';
-      const icon = sender === 'ai' ? models[currentModel].icon : '👤';
-      const gradient = sender === 'ai' ? models[currentModel].gradient : '';
-      
-      div.innerHTML = sender === 'user'
-        ? `<div class="message-user px-4 py-3 rounded-2xl max-w-[80%]">${content}</div>`
-        : `<div class="w-8 h-8 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0">${icon}</div><div class="glass px-4 py-3 rounded-2xl max-w-[80%] ml-3">${content}</div>`;
-      
-      container.appendChild(div);
-      messages.push({ content, sender, timestamp: Date.now() });
-      localStorage.setItem('chat_history', JSON.stringify(messages));
-      document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
     }
-    
-    function showTyping() {
-      const div = document.createElement('div');
-      div.id = 'typing';
-      div.className = 'flex';
-      div.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-br ${models[currentModel].gradient} flex items-center justify-center">${models[currentModel].icon}</div><div class="glass px-4 py-3 rounded-2xl ml-3"><div class="flex gap-1"><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span><span class="typing-dot w-2 h-2 rounded-full bg-cyan-400"></span></div></div>`;
-      document.getElementById('messages').appendChild(div);
-      document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
-    }
-    
-    window.removeTyping = () => document.getElementById('typing')?.remove();
-    window.clearChat = () => { if(confirm('Clear all messages?')) { document.getElementById('messages').innerHTML = ''; document.getElementById('welcome').style.display = 'block'; messages = []; localStorage.removeItem('chat_history'); }};
-    
-    // Load history
-    const saved = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    if (saved.length) {
-      document.getElementById('welcome').style.display = 'none';
-      saved.forEach(m => addMessage(m.content, m.sender));
-    }
-  </script>
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
-  <script type="module">
-    import { firebaseConfig } from '../config/firebase.config.js';
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    function clearChat() {
+      if (confirm('Clear all messages?')) {
+        document.getElementById('messages').innerHTML = '';
+        document.getElementById('welcome').style.display = 'block';
+        messages = [];
+        try { localStorage.removeItem('chat_history'); } catch (e) {}
+        showNotification('Chat cleared');
+      }
+    }
+
+    function loadChatHistory() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('chat_history') || '[]');
+        if (saved.length > 0) {
+          document.getElementById('welcome').style.display = 'none';
+          saved.forEach(msg => addMessage(msg.content, msg.sender));
+        }
+      } catch (e) { console.warn('Could not load chat history:', e); }
+    }
+
+    // =====================
+    // EVENT HANDLERS
+    // =====================
     
-    auth.onAuthStateChanged(user => {
-      if (!user) window.location.href = '../auth/login.html';
+    function setupEventListeners() {
+      document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
+      document.getElementById('overlay').addEventListener('click', closeSidebar);
+      document.getElementById('model-selector-btn').addEventListener('click', toggleModelDialog);
+      document.getElementById('close-model-dialog').addEventListener('click', closeModelDialog);
+      document.getElementById('model-dialog-backdrop').addEventListener('click', closeModelDialog);
+      document.querySelectorAll('.model-quick-btn').forEach(btn => btn.addEventListener('click', () => selectModel(btn.dataset.model)));
+      document.getElementById('settings-btn').addEventListener('click', toggleSettings);
+      document.getElementById('close-settings').addEventListener('click', closeSettings);
+      document.getElementById('clear-btn').addEventListener('click', clearChat);
+      document.getElementById('send-btn').addEventListener('click', sendMessage);
+      
+      const input = document.getElementById('chat-input');
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+      input.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 150) + 'px'; });
+      
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeModelDialog(); closeSettings(); closeSidebar(); } });
+    }
+
+    // =====================
+    // AUTHENTICATION
+    // =====================
+    
+    function initFirebase() {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          const nameEl = document.getElementById('user-name');
+          const emailEl = document.getElementById('user-email');
+          const avatarEl = document.getElementById('user-avatar');
+          
+          if (user.displayName) { nameEl.textContent = user.displayName; avatarEl.textContent = user.displayName.charAt(0).toUpperCase(); }
+          else { nameEl.textContent = 'User'; avatarEl.textContent = 'U'; }
+          if (user.email) { emailEl.textContent = user.email; }
+          
+          document.getElementById('signout-btn').addEventListener('click', () => auth.signOut().then(() => window.location.href = '../auth/login.html'));
+        } else {
+          window.location.href = '../auth/login.html';
+        }
+      });
+    }
+
+    // =====================
+    // INITIALIZATION
+    // =====================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      renderModelList();
+      setupEventListeners();
+      loadChatHistory();
+      initFirebase();
     });
-    
-    window.signOut = () => auth.signOut().then(() => window.location.href = '../auth/login.html');
   </script>
 </body>
 </html>
